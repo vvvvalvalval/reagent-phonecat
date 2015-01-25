@@ -1,0 +1,12 @@
+{
+  "name": "reagent-phonecat",
+  "version": "0.1.0-SNAPSHOT",
+  "authors": [
+    "Valentin Waeselynck <val@bandsquare.fr>"
+  ],
+  "license": "Eclipse Public License",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "~3.3.2"
+  }
+}
