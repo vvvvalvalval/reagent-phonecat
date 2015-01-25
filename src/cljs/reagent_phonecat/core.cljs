@@ -31,10 +31,44 @@
    (for [phone @phones]
      [phone-component phone])])
 
+;; experiments
+(def name (rc/atom "World"))
+(defn hello-cpnt []
+  [:p (str "Hello, " @name "!")])
+
+(defn simple-table []
+  [:table
+   [:tr [:th "row number"]]
+   (for [i (range 8)]
+     [:tr [:td (inc i)]])
+   ])
+
+(defn less-simple-table []
+  [:table
+   (for [i (range 8)]
+     [:tr (for [j (range 8)]
+            [:td (inc i) (inc j)])])
+   ])
+
 ;; -------------------------
 ;; Initialize app
+(defn top-cpnt []
+  [:div 
+   [phones-list]
+
+   [:h2 "Experiments"]
+   [:h4 "Hello World"]
+   [hello-cpnt]
+
+   [:h4 "Simple table"]
+   [simple-table]
+
+   [:h4 "Less simple table"]
+   [less-simple-table]
+   ])
+
 (defn init! []
-  (rc/render-component [phones-list] (.getElementById js/document "app")))
+  (rc/render-component [top-cpnt] (.getElementById js/document "app")))
 
 
 ;; -------------------------
