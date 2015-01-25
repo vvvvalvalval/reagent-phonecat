@@ -4,13 +4,42 @@
     )
 
 ;; -------------------------
+;; State
+
+(def phones "The list of phones. It is an atom so that you can modify it live." 
+  (rc/atom 
+   [{:name "Nexus S"
+     :snippet "Fast just got faster with Nexus S."}
+    {:name "Motorola XOOM™ with Wi-Fi"
+     :snippet "The Next, Next Generation tablet."}
+    {:name "MOTOROLA XOOM™"
+     :snippet "The Next, Next Generation tablet."}]
+   ))
+
+;; -------------------------
 ;; Views
 
-(defn basic-component []
-  [:p "Nothing here " (str "yet" "!")])
+(defn phone-component "component showing details about one phone"
+  [{:keys [name snippet] :as phone}]
+  [:li
+   [:span name]
+   [:p snippet]]
+  )
+
+(defn phones-list "Component displaying the list of phones" []
+  [:ul
+   (for [phone @phones]
+     [phone-component phone])])
 
 ;; -------------------------
 ;; Initialize app
 (defn init! []
-  ;; does nothing for now because the list is still hardcoded
-  #_(rc/render-component [basic-component] (.getElementById js/document "app")))
+  (rc/render-component [phones-list] (.getElementById js/document "app")))
+
+
+;; -------------------------
+;; Playground
+(comment
+  ;; live coding: change the list of phones by eval-ing this form. Notice the change is immediately reflected in the browser, without reloading the page.
+  (swap! phones #(drop 1 %))
+  )
