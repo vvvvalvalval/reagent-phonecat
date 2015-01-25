@@ -12,4 +12,5 @@
 ;; -------------------------
 ;; Initialize app
 (defn init! []
-  (rc/render-component [basic-component] (.getElementById js/document "app")))
+  ;; does nothing for now because the list is still hardcoded
+  #_(rc/render-component [basic-component] (.getElementById js/document "app")))

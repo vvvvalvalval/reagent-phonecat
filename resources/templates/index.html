@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>My HTML File</title>
+    <title>Google Phone Gallery</title>
     {% style "bower_components/bootstrap/dist/css/bootstrap.css" %}
     {% if dev %}
       {% style "css/site.css" %}
@@ -11,7 +11,24 @@
     {% endif %}
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      
+      <ul>
+        <li>
+          <span>Nexus S</span>
+          <p>
+            Fast just got faster with Nexus S.
+          </p>
+        </li>
+        <li>
+          <span>Motorola XOOM™ with Wi-Fi</span>
+          <p>
+            The Next, Next Generation tablet.
+          </p>
+        </li>
+      </ul>
+
+    </div>
     {% if dev %}
       <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.11.2/react.js"></script>
       {% script "js/out/goog/base.js" %}
