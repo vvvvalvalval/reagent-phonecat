@@ -54,15 +54,17 @@ Checks that any string value of the 'data' map matches the 'query' string."
    ])
 
 (defn phone-component "component showing details about one phone"
-  [{:keys [name snippet] :as phone}]
-  [:li
-   [:span name]
-   [:p snippet]]
-  )
+  [{:keys [name snippet id imageUrl] :as phone}]
+  (let [phone-href (str "#/phones/" id)]
+    [:li.thumbnail
+     [:a.thumb {:href phone-href} [:img {:src imageUrl}]]
+     [:a {:href phone-href} name]
+     [:p snippet]]
+    ))
 
 (defn phones-list "Component displaying the list of phones"
   [{:keys [query order-fn] :as diplay-opts} phones]
-  [:ul
+  [:ul.phones
    (for [phone (->> phones
                     (filter (partial matches-query? query))
                     (sort-by order-fn))]
