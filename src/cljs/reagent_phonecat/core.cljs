@@ -1,6 +1,7 @@
 (ns reagent-phonecat.core
     (:require [reagent.core :as rg :refer [atom]]
               [reagent.cursor :as rc]
+              [ajax.core :as ajx]
               [clojure.string :as str]
               )
     )
@@ -21,17 +22,18 @@ Checks that any string value of the 'data' map matches the 'query' string."
 ;; State
 
 (def state
-  (rg/atom
-   {:phones [{:name "Nexus S"
-              :snippet "Fast just got faster with Nexus S."
-              :age 1}
-             {:name "Motorola XOOM™ with Wi-Fi"
-              :snippet "The Next, Next Generation tablet."
-              :age 2}
-             {:name "MOTOROLA XOOM™"
-              :snippet "The Next, Next Generation tablet."
-              :age 3}]
-    }))
+  (rg/atom {:phones []}))
+
+;; -------------------------
+;; Server communication
+
+(defn refresh-phones! "Fetches the list of phones from the server, then updates the global state." []
+  (ajx/GET "/phones/phones.json"
+           {:handler (fn [phones] (swap! state assoc :phones phones))
+            :error-handler (fn [details] (.warn js/console (str "Failed to refresh phones from server: " details)))
+            :response-format :json
+            :keywords? true}))
+
 
 ;; -------------------------
 ;; Views
@@ -94,6 +96,7 @@ Checks that any string value of the 'data' map matches the 'query' string."
 ;; Initialize app
 
 (defn init! []
+  (refresh-phones!)
   (rg/render-component [top-cpnt] (.getElementById js/document "app")))
 
 
