@@ -2,9 +2,12 @@
     (:require [reagent.core :as rg :refer [atom]]
               [reagent.cursor :as rc]
               [ajax.core :as ajx]
+              [secretary.core :as sec :include-macros true]
+              [goog.events :as events]
+              [goog.history.EventType :as EventType]
               [clojure.string :as str]
               )
-    )
+    (:import goog.History))
 
 ;; -------------------------
 ;; Logic
@@ -22,7 +25,9 @@ Checks that any string value of the 'data' map matches the 'query' string."
 ;; State
 
 (def state
-  (rg/atom {:phones []}))
+  (rg/atom {:phones []
+            :current-page nil
+            :route-params {}}))
 
 ;; -------------------------
 ;; Server communication
@@ -70,7 +75,8 @@ Checks that any string value of the 'data' map matches the 'query' string."
                     (sort-by order-fn))]
      ^{:key phone} [phone-component phone])])
 
-(defn phones-page "Component containing the display options and phone list, featuring local UI state." []
+(defn phones-page "Component containing the display options and phone list, featuring local UI state."
+  [_]
   (let [display-state (rg/atom {:query ""    ;; query text to match against 
                                 :order-fn :age ;; property of phones to sort with
                                 })
@@ -78,27 +84,70 @@ Checks that any string value of the 'data' map matches the 'query' string."
         order-cursor (rc/cursor [:order-fn] display-state)
         ]
     (fn []
-      [:div.row
-       [:div.col-md-2
-        ;; sidebar content
-        "Search: " [cursor-input query-cursor]
-        "Sort by: " [order-select order-cursor] 
-        ]
-       [:div.col-md-10
-        ;; body content
-        [phones-list @display-state (:phones @state)]
-        ]]
+      [:div.container-fluid
+       [:div.row
+        [:div.col-md-2
+         ;; sidebar content
+         "Search: " [cursor-input query-cursor]
+         "Sort by: " [order-select order-cursor] 
+         ]
+        [:div.col-md-10
+         ;; body content
+         [phones-list @display-state (:phones @state)]
+         ]]
+       ]
       )))
 
+(defn phone-detail-page [{:keys [phone-id]}]
+  [:div "TDB: detail view for " [:span phone-id]])
+
 (defn top-cpnt []
-  [:div.container-fluid
-   [phones-page]
-   ])
+  (if-let [page (:current-page @state)]
+     [page (:route-params @state)]
+     [:div])
+  )
+
+;; -------------------------
+;; Routes utilities
+(sec/set-config! :prefix "#")
+
+(def h (History.))
+
+(defn go-to-page! "Changes global state to the specified page component with the specified :route-params. Note that this will NOT change the location hash. To change the location and page programmatically, use navigate-to!"
+  ([page-cpnt route-params]
+   (swap! state assoc :current-page page-cpnt :route-params route-params))
+  ([page-cpnt] (go-to-page! page-cpnt {})))
+
+(defn hook-browser-navigation! "Listen to navigation events and dispatches a route change accordingly through secretary." []
+  (doto h
+    (events/listen
+     EventType/NAVIGATE
+     (fn [event]
+       (.log js/console (str "Received NAVIGATE event for " (.-token event)))
+       (sec/dispatch! (.-token event))))
+    (.setEnabled true)))
+
+(defn navigate-to! "Programmatically changes the location hash." [location] 
+  (.setToken h location))
+
+;; -------------------------
+;; Routes declarations
+
+(sec/defroute "/phones" []
+  (go-to-page! phones-page))
+
+(sec/defroute "/phones/:phone-id" {:keys [phone-id]}
+  (go-to-page! phone-detail-page {:phone-id phone-id}))
+
+(sec/defroute "*" []
+  (navigate-to! "/phones"))
+
 ;; -------------------------
 ;; Initialize app
 
 (defn init! []
   (refresh-phones!)
+  (hook-browser-navigation!)
   (rg/render-component [top-cpnt] (.getElementById js/document "app")))
 
 
