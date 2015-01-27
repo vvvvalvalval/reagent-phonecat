@@ -114,6 +114,8 @@ Checks that any string value of the 'data' map matches the 'query' string."
                            [[:dt t] (for [d ds][:dd d])]
                            )))]])
 
+(defn checkmark [input] (if input \u2713 \u2718))
+
 (defn phone-detail-cpnt [phone]
   (let [{:keys [images name description availability additionalFeatures]
          {:keys [ram flash]} :storage
@@ -138,11 +140,11 @@ Checks that any string value of the 'data' map matches the 'query' string."
       [phone-spec-cpnt "Availability and Networks" [(cons "Availability" availability)]]
       [phone-spec-cpnt "Battery" [["Type" type] ["Talk Time" talkTime] ["Standby time (max)" standbyTime]]]
       [phone-spec-cpnt "Storage and Memory" [["RAM" ram] ["Internal Storage" flash]]]
-      [phone-spec-cpnt "Connectivity" [["Network Support" cell] ["WiFi" wifi] ["Bluetooth" bluetooth] ["Infrared" (str  infrared)] ["GPS" (str gps)]]]
+      [phone-spec-cpnt "Connectivity" [["Network Support" cell] ["WiFi" wifi] ["Bluetooth" bluetooth] ["Infrared" (checkmark infrared)] ["GPS" (checkmark gps)]]]
       [phone-spec-cpnt "Android" [["OS Version" os] ["UI" ui]]]
       [phone-spec-cpnt "Size and Weight" [(cons "Dimensions" dimensions) ["Weight" weight]]]
-      [phone-spec-cpnt "Display" [["Screen size" screenSize] ["Screen resolution" screenResolution] ["Touch screen" (str touchScreen)]]]
-      [phone-spec-cpnt "Hardware" [["CPU" cpu] ["USB" usb] ["Audio / headphone jack" audioJack] ["FM Radio" (str fmRadio)] ["Accelerometer" (str  accelerometer)]]]
+      [phone-spec-cpnt "Display" [["Screen size" screenSize] ["Screen resolution" screenResolution] ["Touch screen" (checkmark touchScreen)]]]
+      [phone-spec-cpnt "Hardware" [["CPU" cpu] ["USB" usb] ["Audio / headphone jack" audioJack] ["FM Radio" (checkmark fmRadio)] ["Accelerometer" (checkmark accelerometer)]]]
       [phone-spec-cpnt "Camera" [["Primary" primary] ["Features" (str/join ", " features)]]]
       [:li
        [:span "Additional Features"]
