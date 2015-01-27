@@ -26,19 +26,28 @@ Checks that any string value of the 'data' map matches the 'query' string."
 
 (def state
   (rg/atom {:phones []
+            :phone-by-id {}
+                        
             :current-page nil
             :route-params {}}))
+
 
 ;; -------------------------
 ;; Server communication
 
 (defn refresh-phones! "Fetches the list of phones from the server, then updates the global state." []
-  (ajx/GET "/phones/phones.json"
+  (ajx/GET "phones/phones.json"
            {:handler (fn [phones] (swap! state assoc :phones phones))
             :error-handler (fn [details] (.warn js/console (str "Failed to refresh phones from server: " details)))
             :response-format :json
             :keywords? true}))
 
+(defn fetch-phone! [phone-id]
+  (ajx/GET (str "phones/" phone-id ".json")
+           {:handler (fn [phone] (swap! state assoc-in [:phone-by-id phone-id] phone))
+            :error-handler (fn [details] (.warn js/console (str "Failed to fetchphone from server: " details)))
+            :response-format :json
+            :keywords? true}))
 
 ;; -------------------------
 ;; Views
@@ -98,8 +107,58 @@ Checks that any string value of the 'data' map matches the 'query' string."
        ]
       )))
 
+(defn phone-spec-cpnt [title kvs]
+  [:li
+   [:span title]
+   [:dl (->> kvs (mapcat (fn [[t & ds]]
+                           [[:dt t] (for [d ds][:dd d])]
+                           )))]])
+
+(defn phone-detail-cpnt [phone]
+  (let [{:keys [images name description availability additionalFeatures]
+         {:keys [ram flash]} :storage
+         {:keys [type talkTime standbyTime]} :battery
+         {:keys [cell wifi bluetooth infrared gps]} :connectivity
+         {:keys [os ui]} :android
+         {:keys [dimensions weight]} :sizeAndWeight
+         {:keys [screenSize screenResolution touchScreen]} :display
+         {:keys [cpu usb audioJack fmRadio accelerometer]} :hardware
+         {:keys [primary features]} :camera
+         } phone]
+    [:div
+     [:img.phone {:src (first images)}]
+     [:h1 name]
+     [:p description]
+
+     [:ul.phone-thumbs
+      (for [img images]
+        [:li [:img {:src img}]])]
+     
+     [:ul.specs
+      [phone-spec-cpnt "Availability and Networks" [(cons "Availability" availability)]]
+      [phone-spec-cpnt "Battery" [["Type" type] ["Talk Time" talkTime] ["Standby time (max)" standbyTime]]]
+      [phone-spec-cpnt "Storage and Memory" [["RAM" ram] ["Internal Storage" flash]]]
+      [phone-spec-cpnt "Connectivity" [["Network Support" cell] ["WiFi" wifi] ["Bluetooth" bluetooth] ["Infrared" (str  infrared)] ["GPS" (str gps)]]]
+      [phone-spec-cpnt "Android" [["OS Version" os] ["UI" ui]]]
+      [phone-spec-cpnt "Size and Weight" [(cons "Dimensions" dimensions) ["Weight" weight]]]
+      [phone-spec-cpnt "Display" [["Screen size" screenSize] ["Screen resolution" screenResolution] ["Touch screen" (str touchScreen)]]]
+      [phone-spec-cpnt "Hardware" [["CPU" cpu] ["USB" usb] ["Audio / headphone jack" audioJack] ["FM Radio" (str fmRadio)] ["Accelerometer" (str  accelerometer)]]]
+      [phone-spec-cpnt "Camera" [["Primary" primary] ["Features" (str/join ", " features)]]]
+      [:li
+       [:span "Additional Features"]
+       [:dd additionalFeatures]]
+      ]
+     ]))
+
 (defn phone-detail-page [{:keys [phone-id]}]
-  [:div "TDB: detail view for " [:span phone-id]])
+  (let [phone-c (rc/cursor [:phone-by-id phone-id] state)]
+    (.debug js.console "Fetching phone data for" phone-id)
+    (fetch-phone! phone-id)
+    (fn []
+      (if-let [phone @phone-c]
+        [phone-detail-cpnt phone]
+        [:div]))
+    ))
 
 (defn top-cpnt []
   (if-let [page (:current-page @state)]
