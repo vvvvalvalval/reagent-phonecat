@@ -70,15 +70,19 @@ Checks that any string value of the 'data' map matches the 'query' string."
 (defn phone-component "component showing details about one phone"
   [{:keys [name snippet id imageUrl] :as phone}]
   (let [phone-href (str "#/phones/" id)]
-    [:li.thumbnail
+    [:li.thumbnail.phone-listing
      [:a.thumb {:href phone-href} [:img {:src imageUrl}]]
      [:a {:href phone-href} name]
      [:p snippet]]
     ))
 
+(def react-css-transition-group (.. js/React -addons -CSSTransitionGroup))
+
 (defn phones-list "Component displaying the list of phones"
   [{:keys [query order-fn] :as diplay-opts} phones]
-  [:ul.phones
+  (.info js/console "rendering phones list")
+  [react-css-transition-group {:transitionName "ng"
+                               :component "ul",:class "phones"}
    (for [phone (->> phones
                     (filter (partial matches-query? query))
                     (sort-by order-fn))]
@@ -93,18 +97,19 @@ Checks that any string value of the 'data' map matches the 'query' string."
         order-cursor (rc/cursor [:order-fn] display-state)
         ]
     (fn []
-      [:div.container-fluid
-       [:div.row
-        [:div.col-md-2
-         ;; sidebar content
-         "Search: " [cursor-input query-cursor]
-         "Sort by: " [order-select order-cursor] 
-         ]
-        [:div.col-md-10
-         ;; body content
-         [phones-list @display-state (:phones @state)]
-         ]]
-       ]
+      [:div.view-frame
+       [:div.container-fluid
+        [:div.row
+         [:div.col-md-2
+          ;; sidebar content
+          "Search: " [cursor-input query-cursor]
+          "Sort by: " [order-select order-cursor] 
+          ]
+         [:div.col-md-10
+          ;; body content
+          [phones-list @display-state (:phones @state)]
+          ]]
+        ]]
       )))
 
 (defn phone-spec-cpnt [title kvs]
@@ -129,7 +134,7 @@ Checks that any string value of the 'data' map matches the 'query' string."
          } phone
         main-image-a (rg/atom (first images))]
     (fn []
-      [:div
+      [:div.view-frame
        [:img.phone {:src @main-image-a}]
        [:h1 name]
        [:p description]
@@ -163,13 +168,14 @@ Checks that any string value of the 'data' map matches the 'query' string."
     (fn []
       (if-let [phone @phone-c]
         [phone-detail-cpnt phone]
-        [:div]))
+        [:div.view-frame]))
     ))
 
 (defn top-cpnt []
-  (if-let [page (:current-page @state)]
+  [:div.view-container
+   (if-let [page (:current-page @state)]
      [page (:route-params @state)]
-     [:div])
+     [:div.view-frame])]
   )
 
 ;; -------------------------
