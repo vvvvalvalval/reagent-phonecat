@@ -1,6 +1,8 @@
 # Reagent Phonecat
 
-The official AngularJS 'Phonecat' tutorial ported to a ClojureScript + Reagent stack.
+The official [AngularJS 'Phonecat' tutorial](https://docs.angularjs.org/tutorial) ported to a ClojureScript + Reagent stack.
+
+![](https://docs.angularjs.org/img/tutorial/catalog_screen.png)
 
 This project is based on the Reagent Leiningen template, which has the following workflow:
 
@@ -31,9 +33,9 @@ You can see the code for each step in the tutorial by `git`-checking out the cor
 
 ### Design choices
 
-Except for UI state with limited scope, all the state of the application is held in a global atom, that acts notably as a partial copy of the database. Ajax calls are used only to populate and update this atom. While the drawbacks of global state are well-known, I feel there are several things in this configuration that mitigate them:
+Except for UI state with limited scope, all the state of the application is [held in a global atom](https://github.com/vvvvalvalval/reagent-phonecat/blob/f66e515a0e33123999a4585cd8afefd694f1cc49/src/cljs/reagent_phonecat/core.cljs#L27), that acts notably as a partial copy of the database. [Ajax calls](https://github.com/vvvvalvalval/reagent-phonecat/blob/f66e515a0e33123999a4585cd8afefd694f1cc49/src/cljs/reagent_phonecat/core.cljs#L38) are used only to populate and update this atom. While the drawbacks of global state are well-known, I feel there are several things in this configuration that mitigate them:
 * Combined with ClojureScript livecoding capabilities, having all the state in one accessible place makes it easy to debug and reason about your stateful app
-* Reagent cursors allow us to decouple view rendering/interactions from state storage
+* Reagent cursors allow us to [decouple view rendering/interactions from state storage](https://github.com/vvvvalvalval/reagent-phonecat/blob/f66e515a0e33123999a4585cd8afefd694f1cc49/src/cljs/reagent_phonecat/core.cljs#L55)
 * React components enable you to build the view incrementally, with much finer control flow than the one-step controller->view relationship you typically find in Angular apps.
 
 Navigation is done by keeping the current page component (i.e a function) and the associated route params in the state. This does not feel very neat, I'd rather have only the location hash in the state, but from what I've seen I don't think that's easily compatible with [secretary](https://github.com/gf3/secretary) currently.
