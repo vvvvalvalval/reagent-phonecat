@@ -116,7 +116,7 @@ Checks that any string value of the 'data' map matches the 'query' string."
 
 (defn checkmark [input] (if input \u2713 \u2718))
 
-(defn phone-detail-cpnt [phone]
+(defn phone-detail--loaded [phone]
   (let [{:keys [images name description availability additionalFeatures]
          {:keys [ram flash]} :storage
          {:keys [type talkTime standbyTime]} :battery
@@ -127,8 +127,8 @@ Checks that any string value of the 'data' map matches the 'query' string."
          {:keys [cpu usb audioJack fmRadio accelerometer]} :hardware
          {:keys [primary features]} :camera
          } phone
-        main-image-a (rg/atom (first images))]
-    (fn []
+           main-image-a (rg/atom (first images))]
+    (fn [phone]
       [:div
        [:img.phone {:src @main-image-a}]
        [:h1 name]
@@ -136,9 +136,9 @@ Checks that any string value of the 'data' map matches the 'query' string."
 
        [:ul.phone-thumbs
         (for [img images]
-          [:li [:img {:src img
-                      :on-click (fn [_] (reset! main-image-a img))}]])]
-     
+          ^{:key img} [:li [:img {:src img
+                                  :on-click (fn [_] (reset! main-image-a img))}]])]
+             
        [:ul.specs
         [phone-spec-cpnt "Availability and Networks" [(cons "Availability" availability)]]
         [phone-spec-cpnt "Battery" [["Type" type] ["Talk Time" talkTime] ["Standby time (max)" standbyTime]]]
@@ -151,20 +151,21 @@ Checks that any string value of the 'data' map matches the 'query' string."
         [phone-spec-cpnt "Camera" [["Primary" primary] ["Features" (str/join ", " features)]]]
         [:li
          [:span "Additional Features"]
-         [:dd additionalFeatures]]
-        ]
-       ])
-    ))
+         [:dd additionalFeatures]]]
+       ])))
 
-(defn phone-detail-page [{:keys [phone-id]}]
+(defn phone-detail-cpnt [phone-id]
   (let [phone-c (rc/cursor [:phone-by-id phone-id] state)]
     (.debug js.console "Fetching phone data for" phone-id)
     (fetch-phone! phone-id)
     (fn []
       (if-let [phone @phone-c]
-        [phone-detail-cpnt phone]
+        [phone-detail--loaded phone]
         [:div]))
     ))
+
+(defn phone-detail-page [{:keys [phone-id]}]
+  [:div (list ^{:key phone-id} [phone-detail-cpnt phone-id])])
 
 (defn top-cpnt []
   (if-let [page (:current-page @state)]
