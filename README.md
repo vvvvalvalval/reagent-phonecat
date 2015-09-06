@@ -1,3 +1,7 @@
+# THIS TUTORIAL HAS MOVED!
+
+It's now here: [https://github.com/vvvvalvalval/reagent-phonecat-tutorial/wiki](https://github.com/vvvvalvalval/reagent-phonecat-tutorial/wiki).
+
 # Reagent Phonecat
 
 The official [AngularJS 'Phonecat' tutorial](https://docs.angularjs.org/tutorial) ported to a ClojureScript + Reagent stack.
